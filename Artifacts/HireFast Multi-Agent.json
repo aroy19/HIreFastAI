@@ -1,0 +1,2112 @@
+{
+  "name": "Hiring Insights Multi-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "id": "6f35447c-482d-4a15-9f3e-a2a185a25aea",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2448,
+        656
+      ],
+      "webhookId": "9c0f20eb-149b-4d55-8157-595562f17596"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "mode": "url",
+            "value": "https://drive.google.com/drive/folders/1op-OsDrVPmx61-ke_sy0SJCcC63l4x5z"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "mimeType"
+          ]
+        }
+      },
+      "id": "8f176eb1-cf7e-4eb9-839d-b72c4c9e03d7",
+      "name": "List Folder Files",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2128,
+        784
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aafbep3F112X0SgD",
+          "name": "Aparna - Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "is-csv",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "text/csv",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "not-golden",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "golden_dataset.csv",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "380a3a93-aef1-409a-af84-10ac4a4d0f5c",
+      "name": "Keep CSV Files",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1904,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "binaryPropertyName": "data",
+          "googleFileConversion": {
+            "conversion": {}
+          }
+        }
+      },
+      "id": "896c899e-c786-401c-bcc9-8588578abd6d",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1680,
+        784
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aafbep3F112X0SgD",
+          "name": "Aparna - Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "headerRow": true
+        }
+      },
+      "id": "33971370-dd36-406f-8830-f27428dcd39a",
+      "name": "Parse CSV",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1456,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = [];\nfor (const it of $input.all()) {\n  const j = it.json || {};\n  if (Object.keys(j).length === 0) continue;\n  const clean = {};\n  for (const k of Object.keys(j)) {\n    const key = String(k).trim();\n    let v = j[k];\n    if (typeof v === 'string') v = v.trim();\n    clean[key] = v;\n  }\n  rows.push(clean);\n}\nconst totalRows = rows.length;\nconst columns = totalRows > 0 ? Object.keys(rows[0]) : [];\nconst model = totalRows > 400 ? 'gpt-5.6-luna' : 'gpt-5-mini';\nconst capped = rows.slice(0, 800);\nreturn [{ json: {\n  totalRows,\n  rowsIncluded: capped.length,\n  columns,\n  model,\n  datasetText: JSON.stringify(capped),\n} }];"
+      },
+      "id": "95d80c7b-6b5a-48dd-8d6c-ebfb4c6e2a40",
+      "name": "Clean & Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User question: {{ $('When chat message received').item.json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the AI Orchestrator for HireFast AI, a smart hiring intelligence system for Engineering Managers and Talent teams.\nYour ONLY job is to understand the user question and route it to the correct specialist agent(s). You do NOT answer hiring questions or generate insights. You classify, route, and hand off.\n\nAGENTS (route to one or more, use these exact names):\n1. sourcing_quality — sourcing channels (LinkedIn, referrals, Indeed, GitHub, etc.), which channels work best per role, channel conversion/pass rates, where to invest or cut sourcing budget.\n2. rejection_pattern — why/where/for-which-role candidates are rejected, rejection reasons, repeated failure patterns, whether the JD, interview rubric, or interviewing bar is the problem.\n3. panel_load_balancer — interviewer workload, who is overloaded or underutilized, panel rebalancing, scheduling capacity, interviewer availability.\n4. offer_insights — offer declines, acceptance rates, comp, timing, competing offers, why candidates say no.\n5. pipeline_health — funnel speed, time-to-fill, days open, stale roles, SLA breaches, bottlenecks, candidates stuck at a stage, which roles need escalation.\n\nROUTING RULES:\n1. Pick the PRIMARY agent that best matches the main intent.\n2. Add SECONDARY agents (max 2) only if the question clearly spans multiple domains.\n3. If the question is vague, pick the single most likely agent, set needs_clarification true and give one short clarifying_question.\n4. Greeting, off-topic, or not about hiring data -> primary_agent \"none\", response_type \"conversational\".\n5. Never route to more than 3 agents total.\n\nSet response_type: \"route\" when routing to agents; \"clarify\" when needs_clarification is true; \"conversational\" for greeting/off-topic.\n\nReturn ONLY valid JSON (no markdown) with fields: orchestrator_version (\"1.0\"), user_question (echo original), intent_summary (one sentence), primary_agent (sourcing_quality|rejection_pattern|panel_load_balancer|offer_insights|pipeline_health|none), secondary_agents (array of agent names, max 2), route_confidence (float 0-1), needs_clarification (boolean), clarifying_question (string or null), routing_rationale (one sentence), suggested_filters {job_type: BE|FE|DS|ALL, role_level: SWE1|SWE2|SWE3|Staff SWE|ALL, hiring_manager: name or ALL, time_window: current|last_30_days|ALL}, response_type (route|clarify|conversational)."
+        }
+      },
+      "id": "4691660c-bb61-4e6a-80fa-32f62c480d41",
+      "name": "AI Orchestrator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1536,
+        656
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "b700decd-3b8c-4be1-bb42-249e8c7897bb",
+      "name": "Orchestrator Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1536,
+        896
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"orchestrator_version\":\"1.0\",\"user_question\":\"Which channels give best BE candidates?\",\"intent_summary\":\"User wants the best sourcing channels for Backend roles.\",\"primary_agent\":\"sourcing_quality\",\"secondary_agents\":[],\"route_confidence\":0.9,\"needs_clarification\":false,\"clarifying_question\":null,\"routing_rationale\":\"Question is about sourcing channel quality per role.\",\"suggested_filters\":{\"job_type\":\"BE\",\"role_level\":\"ALL\",\"hiring_manager\":\"ALL\",\"time_window\":\"ALL\"},\"response_type\":\"route\"}"
+      },
+      "id": "ff830bf3-1fb3-443e-91cb-22b23fe4f50b",
+      "name": "Orchestrator Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1408,
+        896
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const o = $json.output || $json || {};\nconst clean = $('Clean & Route').first().json || {};\nlet question = '';\ntry { question = $('When chat message received').first().json.chatInput || ''; } catch (e) {}\nconst primary = o.primary_agent || 'none';\nconst secondary = Array.isArray(o.secondary_agents) ? o.secondary_agents : [];\nconst selected = new Set([primary].concat(secondary).filter(function (a) { return a && a !== 'none'; }));\nlet responseType = o.response_type || (o.needs_clarification ? 'clarify' : (primary === 'none' ? 'conversational' : 'route'));\nif (responseType === 'route' && selected.size === 0) responseType = 'conversational';\nreturn [{ json: {\n  orchestrator: o,\n  response_type: responseType,\n  primary_agent: primary,\n  secondary_agents: secondary,\n  intent_summary: o.intent_summary || '',\n  clarifying_question: o.clarifying_question || '',\n  routing_rationale: o.routing_rationale || '',\n  suggested_filters: o.suggested_filters || {},\n  question: question,\n  run_sourcing: selected.has('sourcing_quality'),\n  run_rejection: selected.has('rejection_pattern'),\n  run_panel: selected.has('panel_load_balancer'),\n  run_offer: selected.has('offer_insights'),\n  run_pipeline: selected.has('pipeline_health'),\n  totalRows: clean.totalRows,\n  rowsIncluded: clean.rowsIncluded,\n  columns: clean.columns,\n  model: clean.model,\n  datasetText: clean.datasetText,\n} }];"
+      },
+      "id": "14045194-c7a0-4e86-bcf9-03ae07332f4f",
+      "name": "Build Routing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.response_type }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "route",
+                    "id": "route-cond"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "route"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "direct"
+        }
+      },
+      "id": "ed3920af-a88e-4dbd-939e-c0b24fde2644",
+      "name": "Route by Response Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -928,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "gate",
+              "leftValue": "={{ $json.run_sourcing }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "219c7b6e-3f7a-4f96-afe0-e9e7834bcbe3",
+      "name": "Gate Sourcing",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -704,
+        -736
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hiring dataset ({{ $json.totalRows }} rows, columns: {{ $json.columns }}). Analyze sourcing quality:\n{{ $json.datasetText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Sourcing Quality Agent for a recruiting analytics team.\nQuestion to answer: Which channels give us the best candidates for which roles, and which channels should we deprioritize?\nAnalyze the provided hiring data (applications, channels/sources, roles, stages reached, offers, hires).\nBefore concluding, call the search_hiring_history tool to retrieve relevant HISTORICAL hiring data and compare current-run patterns against prior results; cite historical context in your evidence when it is available.\nBase every claim strictly on the data provided (current dataset + retrieved history); if a channel or role has too little data, say so.\nReturn ONLY the structured output contract.\nFields: agent (set to \"Sourcing Quality Agent\"); recommendation (specific + actionable, not generic); evidence (concrete data points from the input); confidence_score (float 0-1, calibrated to how much data supports it); cost_of_insight (approximate tokens used, the model name, and a rough USD estimate); alternative (a cheaper/faster option and its trade-off); agent_specific.top_channels_by_role (best channel and channel to deprioritize per role)."
+        }
+      },
+      "id": "f0282f6a-b971-478e-b790-ed090fddf236",
+      "name": "Sourcing Quality Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -448,
+        -944
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "c7874d02-5b34-402f-95c0-2b8ac731b92e",
+      "name": "Sourcing Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        -512
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search historical hiring data (past sourcing, rejections, interviewer load, offers, pipeline speed) to ground recommendations in prior results. Query with the role, channel, stage, interviewer, or metric you need context for.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "hiring-agent-rag",
+          "mode": "list",
+          "cachedResultName": "hiring-agent-rag"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "hiring_history"
+        }
+      },
+      "id": "d8cee286-24ea-40e0-880e-4fd25df7596a",
+      "name": "search_hiring_history",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        -720
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "HCPHAbdh3YdXn8Rj",
+          "name": "Aparna - Pinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "id": "294dc6c2-a3f6-4ae9-9420-5c752ac6f85a",
+      "name": "Embeddings (Sourcing Retrieval)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -576
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"agent\":\"Sourcing Quality Agent\",\"recommendation\":\"Shift 30% of the recruiter budget from LinkedIn to Referrals for Backend Engineer roles.\",\"evidence\":[\"Referrals convert at 22% offer-accept vs 6% for LinkedIn across 140 Backend applications.\"],\"confidence_score\":0.72,\"cost_of_insight\":{\"tokens\":5200,\"model\":\"gpt-5-mini\",\"usd_estimate\":0.004},\"alternative\":\"Use gpt-5-nano for a rough weekly pass; trade-off: less nuanced role-by-role breakdown.\",\"agent_specific\":{\"top_channels_by_role\":[{\"role\":\"Backend Engineer\",\"best_channel\":\"Referrals\",\"deprioritize\":\"Job Boards\"}]}}",
+        "autoFix": true
+      },
+      "id": "1b5f985b-3912-4e72-8834-8ddcf6ad0616",
+      "name": "Sourcing Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        -688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "gate",
+              "leftValue": "={{ $json.run_rejection }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "96353635-4992-4a1b-b398-890877ceb3ef",
+      "name": "Gate Rejection",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -704,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hiring dataset ({{ $json.totalRows }} rows, columns: {{ $json.columns }}). Analyze rejection patterns:\n{{ $json.datasetText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Rejection Pattern Agent for a recruiting analytics team.\nQuestion to answer: What keeps going wrong, at which stages, and for which roles? Is the job description the problem, or is it the interviewing?\nAnalyze rejections/drop-offs by stage (application, screen, interview, offer) and by role.\nBefore concluding, call the search_hiring_history tool to retrieve relevant HISTORICAL rejection/drop-off data and compare current-run patterns against prior results; cite historical context in your evidence when it is available.\nDistinguish likely JD problems (weak top-of-funnel, mismatched applicants) from interviewing problems (strong pipeline but late-stage rejections).\nBase every claim strictly on the data provided (current dataset + retrieved history).\nReturn ONLY the structured output contract.\nFields: agent (set to \"Rejection Pattern Agent\"); recommendation (specific + actionable); evidence (concrete data points from the input); confidence_score (float 0-1, calibrated); cost_of_insight (approximate tokens used, model name, rough USD estimate); alternative (cheaper/faster option and trade-off); agent_specific.failure_by_stage_and_role (stage, role, likely_cause of \"JD\" or \"interviewing\")."
+        }
+      },
+      "id": "a3371e53-50e9-4f3a-a149-3b7a5c6c0143",
+      "name": "Rejection Pattern Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -448,
+        -256
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "cecfc551-1442-4f34-b942-14ed85c6070f",
+      "name": "Rejection Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        112
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"agent\":\"Rejection Pattern Agent\",\"recommendation\":\"Rewrite the Backend Engineer JD to emphasize systems design; screen-stage drop-off suggests a top-of-funnel mismatch.\",\"evidence\":[\"62% of Backend applicants are rejected at the screen stage across 140 applications, vs 20% company-wide.\"],\"confidence_score\":0.68,\"cost_of_insight\":{\"tokens\":5200,\"model\":\"gpt-5-mini\",\"usd_estimate\":0.004},\"alternative\":\"Use gpt-5-nano for a rough weekly pass; trade-off: less nuanced stage-by-stage breakdown.\",\"agent_specific\":{\"failure_by_stage_and_role\":[{\"stage\":\"screen\",\"role\":\"Backend Engineer\",\"likely_cause\":\"JD\"}]}}",
+        "autoFix": true
+      },
+      "id": "b7e73d61-1fe4-4a03-9cea-aa000fb275ad",
+      "name": "Rejection Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "gate",
+              "leftValue": "={{ $json.run_panel }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "06661bd3-7d52-4058-b111-ef28f85ad817",
+      "name": "Gate Panel",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -704,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hiring dataset ({{ $json.totalRows }} rows, columns: {{ $json.columns }}). Analyze interviewer panel load:\n{{ $json.datasetText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Panel Load Balancer Agent for a recruiting analytics team.\nQuestion to answer: Who is overloaded or underutilized on interview panels, and how should panels be rebalanced?\nAnalyze interviewer workload, number of interviews per interviewer, scheduling capacity, and availability from the provided hiring data.\nBefore concluding, call the search_hiring_history tool to retrieve relevant HISTORICAL interviewer-load data and compare current-run patterns against prior results; cite historical context in your evidence when it is available.\nBase every claim strictly on the data provided (current dataset + retrieved history); if an interviewer or panel has too little data, say so.\nReturn ONLY the structured output contract.\nFields: agent (set to \"Panel Load Balancer Agent\"); recommendation (specific + actionable); evidence (concrete data points from the input); confidence_score (float 0-1, calibrated); cost_of_insight (approximate tokens used, model name, rough USD estimate); alternative (cheaper/faster option and trade-off); agent_specific.interviewer_load (interviewer, current_load, status of \"overloaded\"|\"balanced\"|\"underutilized\", suggested_action)."
+        }
+      },
+      "id": "e1be2770-f6e2-4085-85e9-d811728d598e",
+      "name": "Panel Load Balancer Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -336,
+        272
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "ca4068b8-d142-4a5c-b65e-c7c93e357df7",
+      "name": "Panel Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        720
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"agent\":\"Panel Load Balancer Agent\",\"recommendation\":\"Move 3 Backend onsite panels from Sarah to Raj next week; Sarah is at 2x median load.\",\"evidence\":[\"Sarah ran 18 interviews this cycle vs a team median of 8 across 9 interviewers.\"],\"confidence_score\":0.7,\"cost_of_insight\":{\"tokens\":5000,\"model\":\"gpt-4.1-mini\",\"usd_estimate\":0.003},\"alternative\":\"Use gpt-5-nano for a rough weekly load check; trade-off: less nuanced per-interviewer breakdown.\",\"agent_specific\":{\"interviewer_load\":[{\"interviewer\":\"Sarah\",\"current_load\":18,\"status\":\"overloaded\",\"suggested_action\":\"Reassign 3 Backend panels to Raj\"}]}}",
+        "autoFix": true
+      },
+      "id": "a199ebfa-9ba1-44e1-88b6-c4ac607a809b",
+      "name": "Panel Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "gate",
+              "leftValue": "={{ $json.run_offer }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "024f14ca-f2fc-4a4b-acf8-165126832404",
+      "name": "Gate Offer",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -704,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hiring dataset ({{ $json.totalRows }} rows, columns: {{ $json.columns }}). Analyze offers and declines:\n{{ $json.datasetText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Offer Insights Agent for a recruiting analytics team.\nQuestion to answer: Why are offers declined, what is our acceptance rate, and how do we improve it?\nAnalyze offer declines vs accepts, compensation, timing/speed, and competing offers, broken down by role and level.\nBefore concluding, call the search_hiring_history tool to retrieve relevant HISTORICAL offer/decline data and compare current-run patterns against prior results; cite historical context in your evidence when it is available.\nBase every claim strictly on the data provided (current dataset + retrieved history); if a role or level has too little data, say so.\nReturn ONLY the structured output contract.\nFields: agent (set to \"Offer Insights Agent\"); recommendation (specific + actionable); evidence (concrete data points from the input); confidence_score (float 0-1, calibrated); cost_of_insight (approximate tokens used, model name, rough USD estimate); alternative (cheaper/faster option and trade-off); agent_specific.decline_drivers (role_level, top_reason, accept_rate)."
+        }
+      },
+      "id": "32376d71-9d1e-4125-a541-0204ef0f30e4",
+      "name": "Offer Insights Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -336,
+        880
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "d55e1d36-68a7-4baf-834f-5b4370caf5e9",
+      "name": "Offer Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        1328
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"agent\":\"Offer Insights Agent\",\"recommendation\":\"Raise Staff SWE base by 8% and shorten decision-to-offer to under 5 days; comp and speed drive most declines.\",\"evidence\":[\"7 of 9 Staff SWE declines cited competing comp; median time-to-offer was 12 days for declined offers vs 6 for accepted.\"],\"confidence_score\":0.66,\"cost_of_insight\":{\"tokens\":5000,\"model\":\"gpt-4.1-mini\",\"usd_estimate\":0.003},\"alternative\":\"Use gpt-5-nano for a rough weekly pass; trade-off: less nuanced role-level breakdown.\",\"agent_specific\":{\"decline_drivers\":[{\"role_level\":\"Staff SWE\",\"top_reason\":\"competing comp\",\"accept_rate\":0.42}]}}",
+        "autoFix": true
+      },
+      "id": "17cf2b66-e4fc-4c0e-bbf4-d80e72ee229d",
+      "name": "Offer Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "gate",
+              "leftValue": "={{ $json.run_pipeline }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bb3bbf9d-915f-49bb-8089-4363a9f3f98c",
+      "name": "Gate Pipeline",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -704,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hiring dataset ({{ $json.totalRows }} rows, columns: {{ $json.columns }}). Analyze pipeline health:\n{{ $json.datasetText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Pipeline Health Agent for a recruiting analytics team.\nQuestion to answer: Which roles are stalling? Look at funnel speed, time-to-fill, days open, stale roles, SLA breaches, stage bottlenecks, candidates stuck at a stage, and which roles need escalation.\nAnalyze funnel speed and stage-level bottlenecks by role from the provided hiring data.\nBefore concluding, call the search_hiring_history tool to retrieve relevant HISTORICAL pipeline/time-to-fill data and compare current-run patterns against prior results; cite historical context in your evidence when it is available.\nBase every claim strictly on the data provided (current dataset + retrieved history); if a role has too little data, say so.\nReturn ONLY the structured output contract.\nFields: agent (set to \"Pipeline Health Agent\"); recommendation (specific + actionable); evidence (concrete data points from the input); confidence_score (float 0-1, calibrated); cost_of_insight (approximate tokens used, model name, rough USD estimate); alternative (cheaper/faster option and trade-off); agent_specific.roles_needing_attention (role, days_open, bottleneck_stage, needs_escalation)."
+        }
+      },
+      "id": "09a7b419-368c-4ccc-ba6b-03e3fb768640",
+      "name": "Pipeline Health Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -336,
+        1488
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "acf7e754-c485-4276-8abe-2439e767911a",
+      "name": "Pipeline Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        1936
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"agent\":\"Pipeline Health Agent\",\"recommendation\":\"Escalate JOB-0001 (Staff BE, 84 days open); it is stalled at onsite with 5 candidates waiting on scheduling.\",\"evidence\":[\"JOB-0001 has been open 84 days vs a 35-day median; 5 candidates have been at onsite-scheduling for over 14 days.\"],\"confidence_score\":0.71,\"cost_of_insight\":{\"tokens\":5000,\"model\":\"gpt-4.1-mini\",\"usd_estimate\":0.003},\"alternative\":\"Use gpt-5-nano for a rough weekly funnel scan; trade-off: less nuanced per-role bottleneck detail.\",\"agent_specific\":{\"roles_needing_attention\":[{\"role\":\"Staff BE\",\"days_open\":84,\"bottleneck_stage\":\"onsite scheduling\",\"needs_escalation\":true}]}}",
+        "autoFix": true
+      },
+      "id": "7064afcb-09e3-4918-965e-794d5fe5d002",
+      "name": "Pipeline Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        1728
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $json || {};\nlet msg = '';\nif (j.response_type === 'clarify') {\n  msg = j.clarifying_question || 'Could you clarify which hiring area you need insight on (sourcing, rejections, panel load, offers, or pipeline health)?';\n} else {\n  msg = 'Hi! I am HireFast AI. I can help with sourcing quality, rejection patterns, interviewer panel load, offer declines, and pipeline health. What would you like to know?';\n}\nreturn [{ json: { chat_message: msg, response_type: j.response_type } }];"
+      },
+      "id": "0b4a283c-29db-477f-be03-f20f9c21a60c",
+      "name": "Build Direct Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        2096
+      ]
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.chat_message }}",
+        "options": {}
+      },
+      "id": "d02c6ccb-dba8-4149-94d8-a1507875cfa1",
+      "name": "Respond (Direct)",
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        2096
+      ],
+      "webhookId": "ac9c4228-bae4-45e3-85b1-805933d0aa14"
+    },
+    {
+      "parameters": {},
+      "id": "a4e2417b-c956-4e71-9d40-8d5a5fa5ead3",
+      "name": "Run Historic Ingestion (one-time)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2032,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "https://drive.google.com/file/d/1ln6OrT9iTfjgDfrIfa3Fk3gogkaDWMDw/view?usp=sharing",
+          "mode": "url"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "id": "b20b1b88-848e-43d6-92b7-3fbfac466ac7",
+      "name": "Download Historic File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1712,
+        -624
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aafbep3F112X0SgD",
+          "name": "Aparna - Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "hiring-agent-rag",
+          "mode": "list",
+          "cachedResultName": "hiring-agent-rag"
+        },
+        "options": {
+          "clearNamespace": true,
+          "pineconeNamespace": "hiring_history"
+        }
+      },
+      "id": "f32ab136-f75d-4648-8329-6adcda8185dc",
+      "name": "Upsert to Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -1456,
+        -624
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "HCPHAbdh3YdXn8Rj",
+          "name": "Aparna - Pinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "id": "e1f2f76c-bdb4-4325-9525-6fc91fd73411",
+      "name": "Embeddings (Ingestion)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1488,
+        -384
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "eaff95c5-c008-4f63-9695-4bbcf5515e9a",
+      "name": "Historic Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -1360,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "47f8d273-ce0a-49d9-8bab-25bd36d95bc0",
+      "name": "Historic Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "id": "903312f1-57d9-466f-bfd3-cb22ad46925a",
+      "name": "Combine Insights",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const asText = (v) => (typeof v === 'string' ? v : JSON.stringify(v));\nconst num = (v) => (v === null || v === undefined || v === '' ? '' : (isNaN(Number(v)) ? v : Number(v)));\nfunction readable(v, depth) {\n  depth = depth || 0;\n  if (v === null || v === undefined) return '';\n  if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);\n  if (Array.isArray(v)) return v.map(function (x) { return readable(x, depth + 1); }).join(depth > 0 ? '; ' : ' | ');\n  return Object.keys(v).map(function (k) { return k + ': ' + readable(v[k], depth + 1); }).join('; ');\n}\nlet question = '';\ntry { question = $('Build Routing').first().json.question || ''; } catch (e) {}\nconst out = [];\nfor (const it of $input.all()) {\n  const j = it.json || {};\n  if (j.error || j.__error) continue; // skip agent error passthrough items\n  const o = j.output ? j.output : j;\n  if (!o || (!o.agent && !o.recommendation)) continue; // only real agent outputs\n  const cost = (o.cost_of_insight && typeof o.cost_of_insight === 'object') ? o.cost_of_insight : {};\n  out.push({ json: {\n    execution_id: $execution.id,\n    question: question,\n    agent: o.agent || '',\n    recommendation: o.recommendation || '',\n    confidence_score: num(o.confidence_score),\n    evidence: readable(o.evidence),\n    cost_tokens: num(cost.tokens),\n    cost_model: cost.model || '',\n    cost_usd: num(cost.usd_estimate),\n    alternative: o.alternative || '',\n    agent_specific: readable(o.agent_specific),\n    agent_specific_json: asText(o.agent_specific),\n    generated_at: new Date().toISOString(),\n  } });\n}\nreturn out;"
+      },
+      "id": "582a9466-819f-4849-acb8-ed27e5aed0bc",
+      "name": "Format Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1loADiQ_MfcfeyEiI7p75QwOKfYacWV2dPhDwo7cp_2U",
+          "mode": "list",
+          "cachedResultName": "Output file",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1loADiQ_MfcfeyEiI7p75QwOKfYacWV2dPhDwo7cp_2U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Insights"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5de4eaa9-6abc-40e3-97cf-d6400ac4836e",
+      "name": "Append to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        224
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "siZnWerfTfq9YlPD",
+          "name": "Aparna - Google Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const insights = [];\nfor (const it of $input.all()) {\n  const j = it.json || {};\n  if (j.error || j.__error) continue; // skip agent error passthrough items\n  const o = j.output ? j.output : j;\n  if (o && (o.agent || o.recommendation)) insights.push(o); // only real agent outputs\n}\nlet question = '';\ntry { question = $('Build Routing').first().json.question || ''; } catch (e) {}\nreturn [{ json: { insightsText: JSON.stringify(insights), insightCount: insights.length, question } }];"
+      },
+      "id": "383e010e-b683-4ffc-aad3-945d4830d502",
+      "name": "Prepare Eval",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        592
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst TTL_MS = 24 * 60 * 60 * 1000; // cache golden dataset for 24h\nconst now = Date.now();\nconst cache = staticData.goldenCache;\nconst prep = $('Prepare Eval').first().json || {};\nlet cached = false;\nlet goldenText = '[]';\nlet goldenRowCount = 0;\nif (cache && cache.goldenText && cache.cachedAt && (now - cache.cachedAt) < TTL_MS) {\n  cached = true;\n  goldenText = cache.goldenText;\n  goldenRowCount = cache.goldenRowCount || 0;\n}\nreturn [{ json: {\n  cached,\n  goldenText,\n  goldenRowCount,\n  insightsText: prep.insightsText || '[]',\n  question: prep.question || '',\n} }];"
+      },
+      "id": "30002c3d-89c4-452d-b71a-d8955e8124e5",
+      "name": "Check Golden Cache",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        576
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cache-hit",
+              "leftValue": "={{ $json.cached }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8306a09f-00c6-4188-a64b-0ec8c1300b33",
+      "name": "Golden Cache Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=GOLDEN DATASET (expected ground truth, {{ $json.goldenRowCount }} rows):\n{{ $json.goldenText }}\n\nACTUAL INSIGHT AGENT OUTPUTS to evaluate:\n{{ $json.insightsText }}\n\nUser question that was asked: {{ $json.question }}\n\nCompare the ACTUAL outputs against the GOLDEN DATASET. Evaluate each insight agent output as instructed and return ONLY the JSON contract.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Evaluation Agent for HireFast AI — the QUALITY GATE.\n\nAssess each insight agent output BEFORE it reaches the dashboard.\n\nREQUIRED JSON FIELDS: recommendation, evidence (array ≥1), confidence_score (0-1), cost_of_insight, alternative\n\nSCORE 1-5 on:\n- ACTIONABILITY: Can an EM act within 1 week?\n- GROUNDING: Every claim supported by evidence/context?\n- HALLUCINATION_RISK (1=none, 5=severe): Invented job IDs, wrong stats?\n\nPASS: actionability≥4 AND grounding≥4 AND hallucination_risk≤2 AND schema valid\nFLAG: borderline scores OR confidence < 0.6\nFAIL: hallucination_risk≥4 OR grounding≤2 OR invalid schema OR cites fake data (e.g. JOB-9999, LinkedIn 95%)\n\nUse the GOLDEN DATASET as ground truth to check whether the actual insights match expected values and to detect hallucinations (invented job IDs, wrong stats not supported by the golden data).\n\nReturn ONLY JSON:\n{\n  \"overall_status\": \"PASS|PARTIAL|FAIL\",\n  \"quality_gate_decision\": \"RELEASE|RELEASE_WITH_FLAGS|BLOCK\",\n  \"results\": [{ \"agent_name\", \"schema_valid\", \"scores\", \"status\", \"issues\", \"summary\" }]\n}"
+        }
+      },
+      "id": "beeebfdd-bc5e-4cc3-9874-47cbb5ed9629",
+      "name": "Evaluation Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2000,
+        576
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "640c4643-f6b2-4f9d-aba8-eb5a0d21f0f7",
+      "name": "Evaluation Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1872,
+        848
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KAI6QrgxRsLN0LkA",
+          "name": "Aparna - OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"overall_status\":\"PASS\",\"quality_gate_decision\":\"RELEASE\",\"results\":[{\"agent_name\":\"Sourcing Quality Agent\",\"schema_valid\":true,\"scores\":{\"actionability\":4,\"grounding\":4,\"hallucination_risk\":1},\"status\":\"PASS\",\"issues\":[],\"summary\":\"Grounded, actionable recommendation with cited evidence matching the golden dataset.\"}]}"
+      },
+      "id": "bf945c95-17b9-4c9c-9359-744954c3caa3",
+      "name": "Evaluation Contract",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2144,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const asText = (v) => (typeof v === 'string' ? v : JSON.stringify(v));\n\n// Load the actual agent outputs so each eval row also carries the agent's overall output.\nlet insights = [];\ntry { insights = JSON.parse($('Prepare Eval').first().json.insightsText || '[]'); } catch (e) {}\nlet question = '';\ntry { question = $('Prepare Eval').first().json.question || ''; } catch (e) {}\nconst byAgent = {};\nfor (const ins of insights) { if (ins && ins.agent) byAgent[ins.agent] = ins; }\n\nconst attachAgentOutput = (row, name) => {\n  const a = byAgent[name] || {};\n  row.agent_recommendation = a.recommendation || '';\n  row.agent_evidence = asText(a.evidence != null ? a.evidence : '');\n  row.agent_confidence_score = a.confidence_score;\n  row.agent_cost_of_insight = asText(a.cost_of_insight != null ? a.cost_of_insight : '');\n  row.agent_alternative = asText(a.alternative != null ? a.alternative : '');\n  row.agent_specific = asText(a.agent_specific != null ? a.agent_specific : '');\n  row.agent_full_output = Object.keys(a).length ? asText(a) : '';\n  return row;\n};\n\nconst out = [];\nfor (const it of $input.all()) {\n  const j = it.json || {};\n  if (j.error || j.__error) continue; // skip eval error passthrough items\n  const o = j.output ? j.output : j;\n  if (!o || (!o.overall_status && !o.quality_gate_decision && !Array.isArray(o.results))) continue; // only real eval outputs\n  const results = Array.isArray(o.results) ? o.results : [];\n  const base = {\n    overall_status: o.overall_status || '',\n    quality_gate_decision: o.quality_gate_decision || '',\n    question: question,\n    generated_at: new Date().toISOString(),\n    execution_id: $execution.id,\n  };\n  if (results.length === 0) {\n    out.push({ json: attachAgentOutput(Object.assign({}, base, { agent_name: '', schema_valid: '', actionability: '', grounding: '', hallucination_risk: '', status: '', issues: '', summary: asText(o) }), '') });\n  } else {\n    for (const r of results) {\n      const s = r.scores || {};\n      out.push({ json: attachAgentOutput(Object.assign({}, base, {\n        agent_name: r.agent_name || '',\n        schema_valid: r.schema_valid,\n        actionability: s.actionability,\n        grounding: s.grounding,\n        hallucination_risk: s.hallucination_risk,\n        status: r.status || '',\n        issues: asText(r.issues),\n        summary: asText(r.summary),\n      }), r.agent_name || '') });\n    }\n  }\n}\nreturn out;"
+      },
+      "id": "fc96f8d6-166c-4712-9f2a-547cdc874588",
+      "name": "Format Eval Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1loADiQ_MfcfeyEiI7p75QwOKfYacWV2dPhDwo7cp_2U",
+          "mode": "list",
+          "cachedResultName": "Output file",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1loADiQ_MfcfeyEiI7p75QwOKfYacWV2dPhDwo7cp_2U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Evaluations"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e4a5800b-c0ce-490f-8e74-dad29bc7e212",
+      "name": "Append Eval to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2624,
+        496
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "siZnWerfTfq9YlPD",
+          "name": "Aparna - Google Sheet"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const evalOut = ($json && $json.output) ? $json.output : ($json || {});\nlet insights = [];\ntry { insights = JSON.parse($('Prepare Eval').first().json.insightsText || '[]'); } catch (e) {}\nconst LF = String.fromCharCode(10);\nconst lines = [];\nlines.push('HireFast AI — Hiring Insights');\nfor (const ins of insights) {\n  if (!ins) continue;\n  lines.push('');\n  lines.push('• ' + (ins.agent || 'Agent') + ': ' + (ins.recommendation || ''));\n  if (ins.confidence_score != null) lines.push('  confidence: ' + ins.confidence_score);\n}\nlines.push('');\nlines.push('Quality gate: ' + (evalOut.overall_status || 'n/a') + ' — decision: ' + (evalOut.quality_gate_decision || 'n/a'));\nreturn [{ json: { chat_message: lines.join(LF), overall_status: evalOut.overall_status || '', quality_gate_decision: evalOut.quality_gate_decision || '' } }];"
+      },
+      "id": "d00d9d3a-3c1e-469d-92f3-39a4355f4b91",
+      "name": "Build Chat Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.chat_message }}",
+        "options": {}
+      },
+      "id": "a94ec4ee-f50f-4669-8b5b-94491060b314",
+      "name": "Respond (Insights)",
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        2864,
+        912
+      ],
+      "webhookId": "1c077972-30be-4cfc-8596-b72485319ccf"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "mode": "url",
+            "value": "https://drive.google.com/drive/folders/1op-OsDrVPmx61-ke_sy0SJCcC63l4x5z"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "mimeType"
+          ]
+        }
+      },
+      "id": "aebcfaf2-9871-4daa-a928-601356dd51e4",
+      "name": "List Golden File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1520,
+        784
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aafbep3F112X0SgD",
+          "name": "Aparna - Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "is-golden",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "golden_dataset.csv",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c2ba754a-35d2-4ec5-ab92-e2a97f46b307",
+      "name": "Keep Golden Dataset",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1744,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "binaryPropertyName": "data",
+          "googleFileConversion": {
+            "conversion": {}
+          }
+        }
+      },
+      "id": "1bb8449b-8941-4360-ab7b-673a98b03d14",
+      "name": "Download Golden",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1968,
+        784
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aafbep3F112X0SgD",
+          "name": "Aparna - Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "headerRow": true
+        }
+      },
+      "id": "c9261ea5-634c-4df2-beb9-59be10652e75",
+      "name": "Parse Golden CSV",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        2192,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = [];\nfor (const it of $input.all()) {\n  const j = it.json || {};\n  if (Object.keys(j).length === 0) continue;\n  rows.push(j);\n}\nconst prep = $('Prepare Eval').first().json;\nconst goldenText = JSON.stringify(rows.slice(0, 500));\nconst goldenRowCount = rows.length;\n// Store parsed golden dataset in cross-execution cache for reuse.\nconst staticData = $getWorkflowStaticData('global');\nstaticData.goldenCache = { goldenText, goldenRowCount, cachedAt: Date.now() };\nreturn [{ json: {\n  goldenText,\n  goldenRowCount,\n  insightsText: prep.insightsText || '[]',\n  question: prep.question || '',\n} }];"
+      },
+      "id": "be0b9672-e5dd-45ed-998c-6c9fea87d681",
+      "name": "Build Eval Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        784
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "f797c4c5-a77c-48ea-a6b4-e6d3bd7d2728",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "a4e62a78-f9f9-4529-afb4-af1380391a25",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "List Folder Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Folder Files": {
+      "main": [
+        [
+          {
+            "node": "Keep CSV Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep CSV Files": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV": {
+      "main": [
+        [
+          {
+            "node": "Clean & Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean & Route": {
+      "main": [
+        [
+          {
+            "node": "AI Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Build Routing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Orchestrator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Orchestrator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Routing": {
+      "main": [
+        [
+          {
+            "node": "Route by Response Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Response Type": {
+      "main": [
+        [
+          {
+            "node": "Gate Sourcing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gate Rejection",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gate Panel",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gate Offer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gate Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Direct Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Sourcing": {
+      "main": [
+        [
+          {
+            "node": "Sourcing Quality Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sourcing Quality Agent": {
+      "main": [
+        [
+          {
+            "node": "Combine Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sourcing Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sourcing Quality Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Sourcing Contract",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_hiring_history": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sourcing Quality Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Rejection Pattern Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Panel Load Balancer Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Offer Insights Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Pipeline Health Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings (Sourcing Retrieval)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "search_hiring_history",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sourcing Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Sourcing Quality Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Rejection": {
+      "main": [
+        [
+          {
+            "node": "Rejection Pattern Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rejection Pattern Agent": {
+      "main": [
+        [
+          {
+            "node": "Combine Insights",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Rejection Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rejection Pattern Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Rejection Contract",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rejection Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Rejection Pattern Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Panel": {
+      "main": [
+        [
+          {
+            "node": "Panel Load Balancer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Panel Load Balancer Agent": {
+      "main": [
+        [
+          {
+            "node": "Combine Insights",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Panel Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Panel Load Balancer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Panel Contract",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Panel Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Panel Load Balancer Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Offer": {
+      "main": [
+        [
+          {
+            "node": "Offer Insights Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Offer Insights Agent": {
+      "main": [
+        [
+          {
+            "node": "Combine Insights",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Offer Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Offer Insights Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Offer Contract",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Offer Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Offer Insights Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Pipeline": {
+      "main": [
+        [
+          {
+            "node": "Pipeline Health Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline Health Agent": {
+      "main": [
+        [
+          {
+            "node": "Combine Insights",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Pipeline Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pipeline Health Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Pipeline Contract",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Pipeline Health Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Direct Reply": {
+      "main": [
+        [
+          {
+            "node": "Respond (Direct)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Historic Ingestion (one-time)": {
+      "main": [
+        [
+          {
+            "node": "Download Historic File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Historic File": {
+      "main": [
+        [
+          {
+            "node": "Upsert to Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings (Ingestion)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Upsert to Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historic Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Upsert to Pinecone",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historic Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Historic Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Insights": {
+      "main": [
+        [
+          {
+            "node": "Format Rows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Eval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Rows": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Eval": {
+      "main": [
+        [
+          {
+            "node": "Check Golden Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Golden Cache": {
+      "main": [
+        [
+          {
+            "node": "Golden Cache Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Golden Cache Valid?": {
+      "main": [
+        [
+          {
+            "node": "Evaluation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Golden File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Eval Rows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Chat Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Evaluation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation Contract": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Evaluation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Eval Rows": {
+      "main": [
+        [
+          {
+            "node": "Append Eval to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Chat Response": {
+      "main": [
+        [
+          {
+            "node": "Respond (Insights)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Golden File": {
+      "main": [
+        [
+          {
+            "node": "Keep Golden Dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Golden Dataset": {
+      "main": [
+        [
+          {
+            "node": "Download Golden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Golden": {
+      "main": [
+        [
+          {
+            "node": "Parse Golden CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Golden CSV": {
+      "main": [
+        [
+          {
+            "node": "Build Eval Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Eval Prompt": {
+      "main": [
+        [
+          {
+            "node": "Evaluation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d849c663-888e-4b3f-bf30-3e3fa7aa5fee",
+  "meta": {
+    "instanceId": "a1324051b40f50cb2231d6f93d6cbbece9de9ecbc0d7a129f40ed5a67185e253"
+  },
+  "nodeGroups": [
+    {
+      "id": "b13f99b8-c799-4761-b39c-daa6c9083351",
+      "name": "Ingest & Clean",
+      "nodeIds": [
+        "8f176eb1-cf7e-4eb9-839d-b72c4c9e03d7",
+        "380a3a93-aef1-409a-af84-10ac4a4d0f5c",
+        "896c899e-c786-401c-bcc9-8588578abd6d",
+        "33971370-dd36-406f-8830-f27428dcd39a",
+        "95d80c7b-6b5a-48dd-8d6c-ebfb4c6e2a40"
+      ],
+      "description": "List files in the Drive folder, keep CSVs (excluding golden_dataset.csv), download, parse and normalize rows for the agents."
+    },
+    {
+      "id": "8929b4e5-970b-4805-8df6-d8677cfcfb94",
+      "name": "Orchestrate",
+      "nodeIds": [
+        "4691660c-bb61-4e6a-80fa-32f62c480d41",
+        "b700decd-3b8c-4be1-bb42-249e8c7897bb",
+        "ff830bf3-1fb3-443e-91cb-22b23fe4f50b",
+        "14045194-c7a0-4e86-bcf9-03ae07332f4f"
+      ],
+      "description": "AI Orchestrator classifies the question and routes it to the matching specialist agent(s), a clarification, or a conversational reply."
+    },
+    {
+      "id": "3e4fc261-49a9-4c92-9fa9-503d5b205204",
+      "name": "Combine & Deliver",
+      "nodeIds": [
+        "582a9466-819f-4849-acb8-ed27e5aed0bc",
+        "5de4eaa9-6abc-40e3-97cf-d6400ac4836e"
+      ],
+      "description": "Flatten merged agent outputs to shared columns and append to Google Sheets."
+    },
+    {
+      "id": "9ec681ed-51d5-4c56-953a-b56c4494c0cf",
+      "name": "Load Golden Dataset (cached)",
+      "nodeIds": [
+        "aebcfaf2-9871-4daa-a928-601356dd51e4",
+        "c2ba754a-35d2-4ec5-ab92-e2a97f46b307",
+        "1bb8449b-8941-4360-ab7b-673a98b03d14",
+        "c9261ea5-634c-4df2-beb9-59be10652e75",
+        "be0b9672-e5dd-45ed-998c-6c9fea87d681"
+      ],
+      "description": "Cache miss only: download golden_dataset.csv from Drive, parse it, and store it in workflow static data for 24h reuse."
+    },
+    {
+      "id": "9a3651e8-df3a-461d-9834-f5de99622931",
+      "name": "Log Evaluation",
+      "nodeIds": [
+        "fc96f8d6-166c-4712-9f2a-547cdc874588",
+        "e4a5800b-c0ce-490f-8e74-dad29bc7e212"
+      ],
+      "description": "Flatten the evaluation results and append quality-gate scores per agent to the Evaluations sheet."
+    },
+    {
+      "id": "19b887df-80bd-4571-a535-63e9bcc5277a",
+      "name": "RAG Ingestion (one-time)",
+      "nodeIds": [
+        "b20b1b88-848e-43d6-92b7-3fbfac466ac7",
+        "f32ab136-f75d-4648-8329-6adcda8185dc",
+        "e1f2f76c-bdb4-4325-9525-6fc91fd73411",
+        "eaff95c5-c008-4f63-9695-4bbcf5515e9a",
+        "47f8d273-ce0a-49d9-8bab-25bd36d95bc0"
+      ],
+      "description": "One-time flow: load a historic hiring file, chunk and embed it, and upsert into Pinecone for retrieval by the agents."
+    }
+  ],
+  "id": "xLN1PMmOCxqFsuDV",
+  "tags": []
+}

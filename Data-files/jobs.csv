@@ -1,0 +1,31 @@
+job_id,job_type,role_level,hiring_manager,job_status,job_open_date,days_open,job_closed_date,candidate_hired,job_location
+JOB-0001,BE,Staff SWE,Aparna G.,Open,2026-05-21,94,,,"San Francisco, CA"
+JOB-0002,FE,SWE2,Aparna G.,Open,2026-06-06,78,,,"New York, NY"
+JOB-0003,BE,SWE3,Aparna G.,Open,2026-06-19,65,,,"Seattle, WA"
+JOB-0004,DS,Staff SWE,Aparna G.,Open,2026-05-27,88,,,Remote - US
+JOB-0005,FE,Staff SWE,Aparna G.,Open,2026-07-02,52,,,"San Francisco, CA"
+JOB-0006,BE,SWE1,Aparna G.,Open,2026-07-09,45,,,"Austin, TX"
+JOB-0007,FE,SWE1,Aparna G.,Open,2026-07-14,40,,,Remote - US
+JOB-0008,DS,SWE2,Aparna G.,Open,2026-07-16,38,,,"Seattle, WA"
+JOB-0009,BE,Principal,Aparna G.,Open,2026-06-13,71,,,"San Francisco, CA"
+JOB-0010,FE,SWE3,Aparna G.,Open,2026-06-29,55,,,"New York, NY"
+JOB-0011,BE,SWE2,Aparna G.,Open,2026-07-22,32,,,"Austin, TX"
+JOB-0012,DS,SWE1,Aparna G.,Open,2026-07-26,28,,,Remote - US
+JOB-0013,BE,Eng Manager,Aparna G.,Open,2026-06-24,60,,,"San Francisco, CA"
+JOB-0014,FE,Eng Manager,Aparna G.,Open,2026-07-06,48,,,"Seattle, WA"
+JOB-0015,BE,SWE3,Aparna G.,Open,2026-07-29,25,,,"New York, NY"
+JOB-0016,DS,SWE3,Aparna G.,Open,2026-08-01,22,,,"Austin, TX"
+JOB-0017,FE,SWE2,Aparna G.,Open,2026-07-19,35,,,"San Francisco, CA"
+JOB-0018,BE,Staff SWE,Aparna G.,Open,2026-07-12,42,,,"Seattle, WA"
+JOB-0019,DS,Eng Manager,Aparna G.,Open,2026-07-24,30,,,Remote - US
+JOB-0020,BE,SWE2,Aparna G.,Open,2026-08-05,18,,,"Austin, TX"
+JOB-0021,FE,SWE3,Aparna G.,Open,2026-08-08,15,,,"New York, NY"
+JOB-0022,BE,SWE2,Aparna G.,Closed,2026-04-25,75,2026-07-09,CAND-0042,"San Francisco, CA"
+JOB-0023,FE,SWE1,Aparna G.,Closed,2026-05-05,60,2026-07-04,CAND-0088,Remote - US
+JOB-0024,BE,Staff SWE,Aparna G.,Closed,2026-03-26,90,2026-06-24,CAND-0120,"Seattle, WA"
+JOB-0025,DS,SWE2,Aparna G.,Closed,2026-05-15,60,2026-07-14,CAND-0155,"Austin, TX"
+JOB-0026,FE,SWE3,Aparna G.,Closed,2026-04-15,75,2026-06-29,CAND-0198,"New York, NY"
+JOB-0027,BE,SWE1,Aparna G.,Closed,2026-05-20,60,2026-07-19,CAND-0230,"Austin, TX"
+JOB-0028,DS,SWE3,James Okonkwo,Closed,2026-04-05,70,2026-06-14,CAND-0265,Remote - US
+JOB-0029,FE,Staff SWE,Raj Patel,Closed,2026-03-16,80,2026-06-04,CAND-0298,"San Francisco, CA"
+JOB-0030,BE,SWE3,Raj Patel,Closed,2026-05-10,63,2026-07-12,CAND-0335,"Seattle, WA"

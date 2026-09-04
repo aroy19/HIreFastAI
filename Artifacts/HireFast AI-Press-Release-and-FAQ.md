@@ -6,9 +6,9 @@
 
 **San Francisco, CA —** **HireSignal LLC** today announced the launch of **HireFast AI**, an AI-powered hiring intelligence platform that transforms scattered pipeline data into actionable insights Engineering Managers and Talent teams can trust and act on within minutes.
 
-Built on a multi-agent architecture, **HireFast** AI ingests hiring data from ATS exports and structured CSV files, runs five specialized insight agents coordinated by an orchestrator, and delivers **grounded recommendations**—each backed by evidence, a confidence score, generation cost, and a cheaper alternative. A dedicated Evaluation Agent sanity-checks every output before it reaches the dashboard.
+Built on a multi-agent architecture, **HireFast AI** ingests hiring data from ATS exports and structured CSV files, runs five specialized insight agents coordinated by an orchestrator, and delivers **grounded recommendations**—each backed by evidence, a confidence score, generation cost, and a cheaper alternative. A dedicated Evaluation Agent sanity-checks every output before it reaches the dashboard.
 
-"Hiring decisions shouldn't wait until end of quarter," said **Jasson  G., Engineering Manager**, who oversees 27 of 30 open roles in early pilot data. "**HireFast** AI answers what’s stuck in the pipeline, what's breaking at interview stages, and whether we can trust the insight—before Monday standup."
+"Hiring decisions shouldn't wait until end of quarter," said **Jasson G., Engineering Manager**, who oversees 27 of 30 open roles in early pilot data. "**HireFast AI** answers what's stuck in the pipeline, what's breaking at interview stages, and whether we can trust the insight—before Monday standup."
 
 Early runs on mock hiring data—**30 roles**, **220 candidates**, **337 applications**, and **875 interview events**—surfaced actionable patterns in a single orchestrated pass:
 
@@ -22,11 +22,15 @@ Early runs on mock hiring data—**30 roles**, **220 candidates**, **337 applica
 
 HireSignal AI is the capstone deliverable for an AI-Powered Hiring Intelligence System: RAG-grounded insights, LLM-as-judge evaluation, model routing for cost control, and an n8n-style operations dashboard showing funnel metrics, agent latency, and spend per run.
 
-**HireSignal AI — see the pipeline. Trust the insight. Act this week.**
+**HireFast AI — see the pipeline. Trust the insight. Act this week.**
 
 ---
 
-## **HireFast** AI — Product FAQ
+
+
+## HireFast AI — Product FAQ
+
+
 
 ### I. Product Overview
 
@@ -51,7 +55,7 @@ Data flow: ingest → route → insight agents → RAG context → evaluate → 
 
 **What type of data does HireSignal AI use?**
 
-HireSignal AI reads seven joinable tables from `data/hiring/`:
+HireSignal AI reads seven joinable tables:
 
 
 | File                           | What it contains                                                            |
@@ -156,7 +160,77 @@ Pipeline Health and Rejection Pattern have the highest hallucination risk withou
 
 
 
-### V. The Future
+### V. Data Privacy, Security & Production Readiness
+
+For production with real candidate and employee information, these are the highest-priority controls:
+
+1. **De-identify before LLM calls** — In Clean & Route, remove or hash direct identifiers (`interviewer_name`, `hiring_manager`, resume text) and pass **IDs + aggregates only** in `datasetText`. This is the main PII exposure path today.
+2. **Minimize what leaves the org** — Send each agent only the columns it needs; ingest **aggregated historic chunks** into Pinecone (`hiring_rag_knowledge.csv`), never raw candidate rows.
+3. **Lock down access** — Enable authenticated chat on the n8n trigger; restrict Google Drive/Sheets to EM/Talent roles; use scoped, rotatable API keys for OpenAI and Pinecone.
+4. **Govern third-party AI use** — Use OpenAI API with **no training on customer data** (Enterprise / zero-data-retention where required); confirm Google and Pinecone DPAs and data region.
+5. **Safe logging** — Write recommendations and scores to Sheets; avoid logging raw evidence that may contain names; retain logs only as long as policy requires.
+
+---
+
+
+
+### VI. Team, Resources & Operating Cost
+
+**Who built HireSignal AI?**
+
+**One AI engineer** designed, implemented, and operates the system end to end: hiring data schema, n8n multi-agent workflow, RAG ingestion, evaluation harness, Sheets logging, and Looker Studio dashboard. There is no separate backend, frontend, or MLOps team 
+
+**What resources does the system use?**
+
+
+| Layer                 | Resource                      | What it does                                           |
+| --------------------- | ----------------------------- | ------------------------------------------------------ |
+| Orchestration         | n8n Cloud                     | Chat trigger, routing, specialist agents, quality gate |
+| Insight & eval models | OpenAI `gpt-4.1-mini`         | Orchestrator, five insight agents, Evaluation Agent    |
+| Embeddings            | OpenAI embeddings (1024-d)    | Historic ingest and query-time RAG                     |
+| Vector store          | Pinecone (`hiring-agent-rag`) | Historical hiring knowledge for grounding              |
+| Source data           | Google Drive                  | Live CSVs, historic file, golden dataset               |
+| Logging               | Google Sheets                 | Insights + Evaluations tabs                            |
+| Dashboard             | Looker Studio                 | Insight cards, confidence, cost per run                |
+
+
+**What does it cost to run — models, hosting, and maintenance?**
+
+Costs split into **build** (people), **AI usage** (tokens), and **hosting / upkeep**. Figures below are the capstone/pilot profile, not a production invoice.
+
+**Build**
+
+- **1 AI engineer** to stand up and iterate the workflow. No additional headcount required for the demo.
+
+**AI models (usage-based)**
+
+- Agents report `cost_of_insight` on every run (tokens, model, USD).
+- Per-insight estimates on `gpt-4.1-mini` are typically **~$0.003–$0.004**.
+- Documented target: **under $0.15 per chat run** with selective routing (only the needed specialists fire).
+- Model routing cut full-pipeline cost about **38%** vs sending every task to a larger model ($0.68 → $0.42 in the earlier 4o-class comparison).
+- Embeddings are a one-time historic ingest (~73 RAG chunks), then cheap query-time retrieval.
+
+**Hosting and maintenance**
+
+
+| Item                                | Capstone / pilot           | Notes                                                     |
+| ----------------------------------- | -------------------------- | --------------------------------------------------------- |
+| n8n Cloud                           | ~$20–50 / month            | Workflow runtime and chat trigger                         |
+| Pinecone                            | $0–25 / month              | Small namespace; free/starter is enough at current volume |
+| OpenAI API                          | ~$10–30 / month            | ~80–200 chat runs at the per-run target                   |
+| Google Drive, Sheets, Looker Studio | $0 incremental             | Existing Workspace; Looker needs only sheet access        |
+| Maintenance                         | Same 1 engineer, part-time | Eval reviews, RAG refresh, key rotation, prompt tweaks    |
+
+
+**Indicative pilot total: about $30–100 / month** in infra and model spend, plus part-time upkeep by the same engineer.
+
+Production with real candidate volume would add authenticated n8n access, a paid Pinecone/OpenAI plan (region + DPA), and more engineer time for monitoring and PII controls — not a larger standing team.
+
+---
+
+
+
+### VII. The Future
 
 **What's next for HireSignal AI?**
 
@@ -167,21 +241,8 @@ HireSignal AI establishes the foundation for agentic AI across the hiring lifecy
 - Fine-tuned rejection-reason classifier
 - Self-serve filters by hiring manager and role type
 - Prompt A/B testing harness for continuous agent improvement
-
-**How does HireSignal AI fit the capstone requirements?**
-
-
-| Requirement                               | HireSignal AI approach                                                |
-| ----------------------------------------- | --------------------------------------------------------------------- |
-| 5 insight agents + shared output contract | Sourcing, Rejection, Panel Load, Offer, Pipeline—all same JSON schema |
-| End-to-end orchestration                  | Ingest → route → agents → RAG → evaluate → dashboard                  |
-| RAG grounding (≥ 2 agents)                | Pipeline Health + Rejection Pattern                                   |
-| Evaluation Agent                          | 18-scenario golden set, LLM-as-judge                                  |
-| Routing Agent                             | Model selection logged per agent per run                              |
-| Cost optimization (≥ 2 levers)            | Model routing + RAG caching, before/after reported                    |
-| Dashboard                                 | n8n-style workflow canvas, funnel KPIs, insight cards, cost/latency   |
-
+- Serve insignts through visual dasboards to users.
 
 ---
 
-*HireSignal AI™ · AI-Powered Hiring Intelligence System · Capstone Prototype v1.0*
+*HireFast AI™ · AI-Powered Hiring Intelligence System · Capstone Prototype v1.0*

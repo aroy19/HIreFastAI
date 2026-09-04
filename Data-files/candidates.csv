@@ -1,0 +1,221 @@
+candidate_id,sourced_from,profile_summary
+CAND-0001,Indeed,4 YOE Python/Django engineer at Meta. Built search infra.
+CAND-0002,Employee Referral,Full-stack leaning R/statistics. Led team of 6 at Datadog.
+CAND-0003,Indeed,"Mid developer specializing in Node.js. Open to Seattle, WA."
+CAND-0004,Employee Referral,14 YOE Angular engineer at Airbnb. Built ML pipeline.
+CAND-0005,GitHub,15 YOE TensorFlow engineer at Datadog. Built search infra.
+CAND-0006,GitHub,Former Uber Staff Engineer. Expertise in Next.js. 5 years experience.
+CAND-0007,Indeed,Former StartupXYZ Senior SWE. Expertise in Python/ML. 11 years experience.
+CAND-0008,Indeed,Full-stack leaning Java/Kotlin. Led team of 11 at Uber.
+CAND-0009,Employee Referral,Mid developer specializing in Next.js. Open to Remote - US.
+CAND-0010,Indeed,Mid developer specializing in React Native. Open to Remote - US.
+CAND-0011,Indeed,3 YOE Python/Django engineer at Square. Built ML pipeline.
+CAND-0012,Recruiter Agency,"Senior developer specializing in Java/Kotlin. Open to Austin, TX."
+CAND-0013,Employee Referral,15 YOE TensorFlow engineer at StartupXYZ. Built search infra.
+CAND-0014,LinkedIn,Full-stack leaning Python/ML. Led team of 6 at Uber.
+CAND-0015,Employee Referral,2 YOE Python/ML engineer at Plaid. Built search infra.
+CAND-0016,Employee Referral,"Senior developer specializing in Spark/Airflow. Open to Austin, TX."
+CAND-0017,Employee Referral,Former Stripe Senior SWE. Expertise in Go microservices. 2 years experience.
+CAND-0018,Employee Referral,Former Meta Staff Engineer. Expertise in Go microservices. 14 years experience.
+CAND-0019,Indeed,Full-stack leaning dbt/Snowflake. Led team of 3 at Datadog.
+CAND-0020,Employee Referral,8 YOE React/TypeScript engineer at Meta. Built search infra.
+CAND-0021,Employee Referral,"Mid developer specializing in Next.js. Open to San Francisco, CA."
+CAND-0022,Employee Referral,Former Meta Senior SWE. Expertise in Python/ML. 14 years experience.
+CAND-0023,GitHub,Full-stack leaning Node.js. Led team of 8 at Stripe.
+CAND-0024,Employee Referral,Junior developer specializing in React/TypeScript. Open to Remote - US.
+CAND-0025,Employee Referral,2 YOE Spark/Airflow engineer at Meta. Built search infra.
+CAND-0026,LinkedIn,"Mid developer specializing in Java/Kotlin. Open to Seattle, WA."
+CAND-0027,LinkedIn,"Junior developer specializing in TensorFlow. Open to Austin, TX."
+CAND-0028,Employee Referral,"Mid developer specializing in Go microservices. Open to Seattle, WA."
+CAND-0029,LinkedIn,"Mid developer specializing in TensorFlow. Open to Seattle, WA."
+CAND-0030,Indeed,Senior developer specializing in Go microservices. Open to Remote - US.
+CAND-0031,Company Website,2 YOE Node.js engineer at Airbnb. Built ML pipeline.
+CAND-0032,Employee Referral,9 YOE Next.js engineer at Stripe. Built ML pipeline.
+CAND-0033,LinkedIn,"Junior developer specializing in Python/Django. Open to Seattle, WA."
+CAND-0034,Indeed,Former Square Senior SWE. Expertise in React Native. 13 years experience.
+CAND-0035,Employee Referral,"Junior developer specializing in Next.js. Open to Austin, TX."
+CAND-0036,Employee Referral,Former Datadog SWE. Expertise in Angular. 6 years experience.
+CAND-0037,GitHub,"Junior developer specializing in React Native. Open to Seattle, WA."
+CAND-0038,Employee Referral,Full-stack leaning TensorFlow. Led team of 5 at Uber.
+CAND-0039,Employee Referral,"Junior developer specializing in React Native. Open to Seattle, WA."
+CAND-0040,Indeed,Full-stack leaning Go microservices. Led team of 10 at Airbnb.
+CAND-0041,Employee Referral,Full-stack leaning Spark/Airflow. Led team of 5 at Airbnb.
+CAND-0042,Indeed,Full-stack leaning TensorFlow. Led team of 9 at Plaid.
+CAND-0043,LinkedIn,9 YOE React Native engineer at Uber. Built search infra.
+CAND-0044,Employee Referral,Full-stack leaning Ruby on Rails. Led team of 9 at Meta.
+CAND-0045,Employee Referral,Full-stack leaning Python/ML. Led team of 9 at Meta.
+CAND-0046,LinkedIn,Staff developer specializing in Python/Django. Open to Remote - US.
+CAND-0047,Indeed,"Mid developer specializing in Angular. Open to Seattle, WA."
+CAND-0048,Indeed,5 YOE Go microservices engineer at Uber. Built search infra.
+CAND-0049,Indeed,Full-stack leaning Node.js. Led team of 8 at Uber.
+CAND-0050,Company Website,Full-stack leaning Python/ML. Led team of 8 at Square.
+CAND-0051,LinkedIn,Full-stack leaning R/statistics. Led team of 9 at Datadog.
+CAND-0052,LinkedIn,Full-stack leaning dbt/Snowflake. Led team of 11 at StartupXYZ.
+CAND-0053,Employee Referral,3 YOE Next.js engineer at StartupXYZ. Built design system.
+CAND-0054,Employee Referral,5 YOE Next.js engineer at Airbnb. Built ML pipeline.
+CAND-0055,Employee Referral,Former Stripe Senior SWE. Expertise in Java/Kotlin. 13 years experience.
+CAND-0056,Employee Referral,Full-stack leaning R/statistics. Led team of 11 at Datadog.
+CAND-0057,Indeed,"Staff developer specializing in Java/Kotlin. Open to New York, NY."
+CAND-0058,Employee Referral,14 YOE React Native engineer at Meta. Built ML pipeline.
+CAND-0059,Employee Referral,Full-stack leaning Next.js. Led team of 8 at Meta.
+CAND-0060,Indeed,Full-stack leaning R/statistics. Led team of 5 at Plaid.
+CAND-0061,Employee Referral,"Staff developer specializing in Next.js. Open to Seattle, WA."
+CAND-0062,Employee Referral,6 YOE Angular engineer at Airbnb. Built design system.
+CAND-0063,LinkedIn,Full-stack leaning Node.js. Led team of 5 at Plaid.
+CAND-0064,Indeed,Full-stack leaning React Native. Led team of 7 at Uber.
+CAND-0065,Indeed,5 YOE Angular engineer at Datadog. Built search infra.
+CAND-0066,Employee Referral,8 YOE TensorFlow engineer at Airbnb. Built search infra.
+CAND-0067,Employee Referral,9 YOE Spark/Airflow engineer at Airbnb. Built design system.
+CAND-0068,Employee Referral,Full-stack leaning Go microservices. Led team of 2 at Plaid.
+CAND-0069,Company Website,Full-stack leaning React/TypeScript. Led team of 4 at Square.
+CAND-0070,Employee Referral,Former Square Tech Lead. Expertise in Ruby on Rails. 2 years experience.
+CAND-0071,Employee Referral,Former Meta Senior SWE. Expertise in R/statistics. 1 years experience.
+CAND-0072,Employee Referral,Full-stack leaning Java/Kotlin. Led team of 5 at Square.
+CAND-0073,Indeed,Former Meta Staff Engineer. Expertise in dbt/Snowflake. 14 years experience.
+CAND-0074,LinkedIn,14 YOE Vue.js engineer at Meta. Built ML pipeline.
+CAND-0075,LinkedIn,"Staff developer specializing in Angular. Open to San Francisco, CA."
+CAND-0076,Company Website,6 YOE R/statistics engineer at Airbnb. Built payments API.
+CAND-0077,Recruiter Agency,Former Stripe Tech Lead. Expertise in TensorFlow. 14 years experience.
+CAND-0078,LinkedIn,Full-stack leaning Next.js. Led team of 4 at Uber.
+CAND-0079,LinkedIn,Full-stack leaning Next.js. Led team of 7 at Stripe.
+CAND-0080,Recruiter Agency,Full-stack leaning React Native. Led team of 10 at Stripe.
+CAND-0081,LinkedIn,Former Stripe Staff Engineer. Expertise in Next.js. 11 years experience.
+CAND-0082,Employee Referral,"Staff developer specializing in Spark/Airflow. Open to San Francisco, CA."
+CAND-0083,LinkedIn,"Staff developer specializing in Python/Django. Open to Austin, TX."
+CAND-0084,LinkedIn,7 YOE Python/Django engineer at StartupXYZ. Built ML pipeline.
+CAND-0085,GitHub,Former Plaid Tech Lead. Expertise in Angular. 12 years experience.
+CAND-0086,LinkedIn,Full-stack leaning Vue.js. Led team of 7 at Datadog.
+CAND-0087,Indeed,7 YOE Vue.js engineer at Plaid. Built payments API.
+CAND-0088,LinkedIn,Former Square SWE. Expertise in Vue.js. 1 years experience.
+CAND-0089,LinkedIn,Junior developer specializing in React Native. Open to Remote - US.
+CAND-0090,LinkedIn,4 YOE React/TypeScript engineer at Square. Built payments API.
+CAND-0091,Employee Referral,Full-stack leaning Go microservices. Led team of 8 at Uber.
+CAND-0092,Employee Referral,Full-stack leaning Node.js. Led team of 12 at Datadog.
+CAND-0093,LinkedIn,Former Airbnb SWE. Expertise in dbt/Snowflake. 1 years experience.
+CAND-0094,LinkedIn,"Staff developer specializing in Angular. Open to Austin, TX."
+CAND-0095,LinkedIn,10 YOE Angular engineer at Airbnb. Built payments API.
+CAND-0096,Company Website,Mid developer specializing in TensorFlow. Open to Remote - US.
+CAND-0097,LinkedIn,Full-stack leaning Python/ML. Led team of 3 at Airbnb.
+CAND-0098,Employee Referral,"Mid developer specializing in Vue.js. Open to Seattle, WA."
+CAND-0099,Indeed,13 YOE React/TypeScript engineer at Plaid. Built ML pipeline.
+CAND-0100,Employee Referral,Full-stack leaning Angular. Led team of 8 at Meta.
+CAND-0101,Employee Referral,Former Uber SWE. Expertise in Java/Kotlin. 8 years experience.
+CAND-0102,Employee Referral,1 YOE Go microservices engineer at Plaid. Built design system.
+CAND-0103,LinkedIn,Former Square Tech Lead. Expertise in R/statistics. 12 years experience.
+CAND-0104,Company Website,Full-stack leaning Angular. Led team of 3 at Datadog.
+CAND-0105,LinkedIn,"Junior developer specializing in Python/ML. Open to Austin, TX."
+CAND-0106,LinkedIn,Former Uber Senior SWE. Expertise in Python/ML. 1 years experience.
+CAND-0107,LinkedIn,Mid developer specializing in Python/Django. Open to Remote - US.
+CAND-0108,Employee Referral,Former Uber Staff Engineer. Expertise in Java/Kotlin. 3 years experience.
+CAND-0109,Employee Referral,Full-stack leaning React/TypeScript. Led team of 11 at Meta.
+CAND-0110,LinkedIn,Full-stack leaning Java/Kotlin. Led team of 8 at Airbnb.
+CAND-0111,Indeed,12 YOE Next.js engineer at Meta. Built ML pipeline.
+CAND-0112,LinkedIn,"Staff developer specializing in TensorFlow. Open to San Francisco, CA."
+CAND-0113,LinkedIn,Full-stack leaning Go microservices. Led team of 8 at Plaid.
+CAND-0114,Indeed,3 YOE Next.js engineer at Meta. Built ML pipeline.
+CAND-0115,GitHub,1 YOE R/statistics engineer at Uber. Built ML pipeline.
+CAND-0116,LinkedIn,Former Datadog Tech Lead. Expertise in React Native. 2 years experience.
+CAND-0117,Employee Referral,10 YOE Vue.js engineer at Square. Built ML pipeline.
+CAND-0118,Company Website,Full-stack leaning Vue.js. Led team of 3 at StartupXYZ.
+CAND-0119,Employee Referral,"Junior developer specializing in Vue.js. Open to San Francisco, CA."
+CAND-0120,Indeed,Full-stack leaning Java/Kotlin. Led team of 9 at Airbnb.
+CAND-0121,Employee Referral,2 YOE TensorFlow engineer at Square. Built ML pipeline.
+CAND-0122,Employee Referral,Former Stripe Staff Engineer. Expertise in React/TypeScript. 10 years experience.
+CAND-0123,Employee Referral,Former StartupXYZ Tech Lead. Expertise in Node.js. 8 years experience.
+CAND-0124,Employee Referral,Full-stack leaning dbt/Snowflake. Led team of 8 at Stripe.
+CAND-0125,Indeed,5 YOE React/TypeScript engineer at Square. Built ML pipeline.
+CAND-0126,Employee Referral,4 YOE Node.js engineer at Square. Built ML pipeline.
+CAND-0127,Indeed,"Mid developer specializing in Java/Kotlin. Open to New York, NY."
+CAND-0128,Employee Referral,Former Meta Tech Lead. Expertise in Python/Django. 10 years experience.
+CAND-0129,Indeed,"Staff developer specializing in R/statistics. Open to San Francisco, CA."
+CAND-0130,LinkedIn,10 YOE React/TypeScript engineer at Uber. Built payments API.
+CAND-0131,Employee Referral,Full-stack leaning React/TypeScript. Led team of 12 at Square.
+CAND-0132,Employee Referral,Full-stack leaning Vue.js. Led team of 10 at Stripe.
+CAND-0133,Employee Referral,"Senior developer specializing in dbt/Snowflake. Open to Austin, TX."
+CAND-0134,Indeed,"Staff developer specializing in Go microservices. Open to Seattle, WA."
+CAND-0135,Employee Referral,Mid developer specializing in Spark/Airflow. Open to Remote - US.
+CAND-0136,LinkedIn,13 YOE TensorFlow engineer at StartupXYZ. Built ML pipeline.
+CAND-0137,Employee Referral,Former Datadog Senior SWE. Expertise in Node.js. 6 years experience.
+CAND-0138,LinkedIn,"Staff developer specializing in R/statistics. Open to New York, NY."
+CAND-0139,GitHub,13 YOE Spark/Airflow engineer at Plaid. Built ML pipeline.
+CAND-0140,Indeed,"Mid developer specializing in React Native. Open to Seattle, WA."
+CAND-0141,LinkedIn,Former Square Senior SWE. Expertise in Next.js. 13 years experience.
+CAND-0142,GitHub,"Mid developer specializing in Python/ML. Open to Seattle, WA."
+CAND-0143,GitHub,"Staff developer specializing in Python/Django. Open to San Francisco, CA."
+CAND-0144,Employee Referral,"Senior developer specializing in Python/Django. Open to New York, NY."
+CAND-0145,Employee Referral,Full-stack leaning Vue.js. Led team of 6 at Plaid.
+CAND-0146,GitHub,12 YOE R/statistics engineer at Square. Built payments API.
+CAND-0147,Employee Referral,13 YOE R/statistics engineer at Plaid. Built payments API.
+CAND-0148,LinkedIn,Full-stack leaning Spark/Airflow. Led team of 11 at Airbnb.
+CAND-0149,Employee Referral,2 YOE R/statistics engineer at Uber. Built design system.
+CAND-0150,Recruiter Agency,12 YOE React/TypeScript engineer at Uber. Built ML pipeline.
+CAND-0151,Employee Referral,Full-stack leaning Angular. Led team of 3 at StartupXYZ.
+CAND-0152,Employee Referral,Staff developer specializing in Python/Django. Open to Remote - US.
+CAND-0153,Employee Referral,4 YOE TensorFlow engineer at Uber. Built design system.
+CAND-0154,Company Website,Former Uber Tech Lead. Expertise in dbt/Snowflake. 8 years experience.
+CAND-0155,GitHub,Former Square Staff Engineer. Expertise in Python/ML. 7 years experience.
+CAND-0156,Indeed,Former Square Tech Lead. Expertise in React Native. 8 years experience.
+CAND-0157,LinkedIn,Full-stack leaning React/TypeScript. Led team of 4 at Meta.
+CAND-0158,Employee Referral,Full-stack leaning Go microservices. Led team of 7 at Uber.
+CAND-0159,LinkedIn,Full-stack leaning Python/Django. Led team of 3 at Uber.
+CAND-0160,Indeed,"Staff developer specializing in Next.js. Open to New York, NY."
+CAND-0161,Indeed,4 YOE React/TypeScript engineer at StartupXYZ. Built ML pipeline.
+CAND-0162,Indeed,"Mid developer specializing in R/statistics. Open to Seattle, WA."
+CAND-0163,Employee Referral,Full-stack leaning Python/Django. Led team of 11 at Datadog.
+CAND-0164,LinkedIn,3 YOE R/statistics engineer at Meta. Built design system.
+CAND-0165,Indeed,2 YOE Spark/Airflow engineer at Uber. Built search infra.
+CAND-0166,GitHub,Former StartupXYZ Tech Lead. Expertise in R/statistics. 11 years experience.
+CAND-0167,Employee Referral,"Senior developer specializing in Python/Django. Open to New York, NY."
+CAND-0168,Employee Referral,Former Meta Senior SWE. Expertise in React Native. 10 years experience.
+CAND-0169,GitHub,1 YOE Python/ML engineer at Meta. Built payments API.
+CAND-0170,LinkedIn,Full-stack leaning TensorFlow. Led team of 9 at Airbnb.
+CAND-0171,Indeed,Full-stack leaning Node.js. Led team of 4 at Plaid.
+CAND-0172,GitHub,Former Square Staff Engineer. Expertise in Angular. 12 years experience.
+CAND-0173,Employee Referral,4 YOE Vue.js engineer at Meta. Built search infra.
+CAND-0174,Recruiter Agency,Former Uber Senior SWE. Expertise in Go microservices. 14 years experience.
+CAND-0175,GitHub,Full-stack leaning React/TypeScript. Led team of 7 at Square.
+CAND-0176,Employee Referral,10 YOE Next.js engineer at Airbnb. Built ML pipeline.
+CAND-0177,Indeed,Former Stripe Staff Engineer. Expertise in Next.js. 1 years experience.
+CAND-0178,Indeed,Former Meta SWE. Expertise in React Native. 14 years experience.
+CAND-0179,Indeed,10 YOE Ruby on Rails engineer at Square. Built design system.
+CAND-0180,LinkedIn,"Mid developer specializing in Ruby on Rails. Open to Austin, TX."
+CAND-0181,LinkedIn,"Junior developer specializing in R/statistics. Open to Seattle, WA."
+CAND-0182,Recruiter Agency,Junior developer specializing in Python/ML. Open to Remote - US.
+CAND-0183,LinkedIn,Former StartupXYZ SWE. Expertise in dbt/Snowflake. 10 years experience.
+CAND-0184,Employee Referral,Full-stack leaning Python/Django. Led team of 5 at Square.
+CAND-0185,Recruiter Agency,Former Uber Tech Lead. Expertise in Next.js. 9 years experience.
+CAND-0186,LinkedIn,Former Airbnb Staff Engineer. Expertise in Go microservices. 4 years experience.
+CAND-0187,LinkedIn,15 YOE TensorFlow engineer at Airbnb. Built ML pipeline.
+CAND-0188,Employee Referral,"Mid developer specializing in TensorFlow. Open to New York, NY."
+CAND-0189,Company Website,Former Meta Senior SWE. Expertise in Spark/Airflow. 5 years experience.
+CAND-0190,Employee Referral,Former Meta SWE. Expertise in Next.js. 6 years experience.
+CAND-0191,LinkedIn,Junior developer specializing in Go microservices. Open to Remote - US.
+CAND-0192,Company Website,Full-stack leaning Python/Django. Led team of 2 at Stripe.
+CAND-0193,Employee Referral,Full-stack leaning TensorFlow. Led team of 9 at Airbnb.
+CAND-0194,Employee Referral,"Junior developer specializing in Python/Django. Open to Seattle, WA."
+CAND-0195,Employee Referral,"Staff developer specializing in dbt/Snowflake. Open to San Francisco, CA."
+CAND-0196,LinkedIn,Former Square Tech Lead. Expertise in Go microservices. 1 years experience.
+CAND-0197,Employee Referral,12 YOE Vue.js engineer at Stripe. Built ML pipeline.
+CAND-0198,Indeed,Former Uber Senior SWE. Expertise in TensorFlow. 15 years experience.
+CAND-0199,Indeed,Former Plaid Senior SWE. Expertise in dbt/Snowflake. 6 years experience.
+CAND-0200,Employee Referral,Former Datadog Senior SWE. Expertise in Python/ML. 2 years experience.
+CAND-0201,Indeed,Full-stack leaning dbt/Snowflake. Led team of 10 at Meta.
+CAND-0202,LinkedIn,9 YOE Node.js engineer at Airbnb. Built payments API.
+CAND-0203,Employee Referral,12 YOE React/TypeScript engineer at Stripe. Built search infra.
+CAND-0204,Indeed,Full-stack leaning dbt/Snowflake. Led team of 3 at Uber.
+CAND-0205,LinkedIn,Former Square Senior SWE. Expertise in Vue.js. 2 years experience.
+CAND-0206,Indeed,Former Square Senior SWE. Expertise in R/statistics. 7 years experience.
+CAND-0207,Employee Referral,Full-stack leaning Python/ML. Led team of 3 at Stripe.
+CAND-0208,LinkedIn,10 YOE React/TypeScript engineer at Datadog. Built search infra.
+CAND-0209,Indeed,Former Airbnb Staff Engineer. Expertise in Ruby on Rails. 3 years experience.
+CAND-0210,Recruiter Agency,"Mid developer specializing in dbt/Snowflake. Open to Austin, TX."
+CAND-0211,Employee Referral,Full-stack leaning Next.js. Led team of 8 at Uber.
+CAND-0212,Indeed,Former Airbnb Tech Lead. Expertise in Vue.js. 4 years experience.
+CAND-0213,LinkedIn,Former Airbnb Staff Engineer. Expertise in Python/Django. 7 years experience.
+CAND-0214,LinkedIn,1 YOE Go microservices engineer at Square. Built search infra.
+CAND-0215,LinkedIn,Former Datadog SWE. Expertise in React/TypeScript. 5 years experience.
+CAND-0216,LinkedIn,Full-stack leaning Go microservices. Led team of 6 at Airbnb.
+CAND-0217,LinkedIn,"Senior developer specializing in React/TypeScript. Open to Seattle, WA."
+CAND-0218,LinkedIn,"Senior developer specializing in Python/Django. Open to New York, NY."
+CAND-0219,Employee Referral,"Staff developer specializing in Spark/Airflow. Open to Austin, TX."
+CAND-0220,Indeed,Former Plaid SWE. Expertise in Vue.js. 3 years experience.
